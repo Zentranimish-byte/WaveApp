@@ -11,17 +11,17 @@ export default function FeedScreen() {
       </View>
       <ScrollView style={styles.feed}>
         <View style={styles.postCard}>
-          <Text style={styles.postAuthor}>👤 anonymous</Text>
+          <Text style={styles.postAuthor}>anonymous</Text>
           <Text style={styles.postContent}>just smiled at someone at the library and they smiled back. peak romance.</Text>
           <TouchableOpacity style={styles.hookButton}>
-            <Text style={styles.hookText}>🪝 12</Text>
+            <Text style={styles.hookText}>hook 12</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.postCard}>
-          <Text style={styles.postAuthor}>👤 anonymous</Text>
+          <Text style={styles.postAuthor}>anonymous</Text>
           <Text style={styles.postContent}>why is everyone on campus wearing headphones. let me in.</Text>
           <TouchableOpacity style={styles.hookButton}>
-            <Text style={styles.hookText}>🪝 34</Text>
+            <Text style={styles.hookText}>hook 34</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
