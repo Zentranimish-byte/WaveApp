@@ -7,18 +7,37 @@ import FeedScreen from './screens/FeedScreen';
 import SparksScreen from './screens/SparksScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import AuthScreen from './screens/AuthScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
   const [session, setSession] = useState(null);
+  const [hasProfile, setHasProfile] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    supabase.auth.onAuthStateChange((_event, session) => setSession(session));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) checkProfile(session.user.id);
+      else setLoading(false);
+    });
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) checkProfile(session.user.id);
+      else { setHasProfile(false); setLoading(false); }
+    });
   }, []);
 
+  async function checkProfile(userId) {
+    const { data } = await supabase.from('profiles').select('id').eq('user_id', userId).single();
+    setHasProfile(!!data);
+    setLoading(false);
+  }
+
+  if (loading) return null;
   if (!session) return <AuthScreen />;
+  if (!hasProfile) return <OnboardingScreen userId={session.user.id} onComplete={() => setHasProfile(true)} />;
 
   return (
     <NavigationContainer>
