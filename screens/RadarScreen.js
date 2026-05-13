@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { supabase } from '../services/supabase';
@@ -8,7 +8,7 @@ export default function RadarScreen() {
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const [userId, setUserId] = useState(null);
-
+  const [selectedUser, setSelectedUser] = useState(null);
   useEffect(() => {
     setup();
   }, []);
@@ -92,13 +92,13 @@ export default function RadarScreen() {
         </View>
 
         {nearbyUsers.map((user, index) => {
-          const pos = getDotPosition(index, nearbyUsers.length);
-          return (
-            <TouchableOpacity key={user.user_id} style={[styles.userDot, { left: pos.left, top: pos.top }]}>
-              <Text style={styles.userDotText}>{user.profile?.display_name?.charAt(0) || '?'}</Text>
-            </TouchableOpacity>
-          );
-        })}
+  const pos = getDotPosition(index, nearbyUsers.length);
+  return (
+    <TouchableOpacity key={user.user_id} style={[styles.userDot, { left: pos.left, top: pos.top }]} onPress={() => setSelectedUser(user)}>
+      <Text style={styles.userDotText}>{user.profile?.display_name?.charAt(0) || '?'}</Text>
+    </TouchableOpacity>
+  );
+})}
       </View>
 
       <Text style={styles.nearbyText}>
@@ -108,6 +108,37 @@ export default function RadarScreen() {
       <TouchableOpacity style={styles.refreshBtn} onPress={() => location && fetchNearbyUsers(userId, location.latitude, location.longitude)}>
         <Text style={styles.refreshText}>Refresh Radar</Text>
       </TouchableOpacity>
+      <Modal visible={!!selectedUser} transparent animationType="slide">
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalCard}>
+      <View style={styles.modalAvatar}>
+        <Text style={styles.modalAvatarText}>:)</Text>
+      </View>
+      <Text style={styles.modalName}>
+        {selectedUser?.profile?.display_name}, {selectedUser?.profile?.age}
+      </Text>
+      <Text style={styles.modalGender}>{selectedUser?.profile?.gender}</Text>
+      <Text style={styles.modalTagline}>{selectedUser?.profile?.tagline}</Text>
+      <Text style={styles.modalDistance}>{Math.round(selectedUser?.distance)}m away</Text>
+
+      <View style={styles.modalButtons}>
+        <TouchableOpacity style={styles.waveBtn}>
+          <Text style={styles.waveBtnText}>Wave</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.winkBtn}>
+          <Text style={styles.winkBtnText}>Wink</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.sparkBtn}>
+          <Text style={styles.sparkBtnText}>Spark</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.closeBtn} onPress={() => setSelectedUser(null)}>
+        <Text style={styles.closeBtnText}>Close</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
     </View>
   );
 }
@@ -129,4 +160,21 @@ const styles = StyleSheet.create({
   nearbyText: { color: '#00ff88', textAlign: 'center', padding: 20, fontSize: 14 },
   refreshBtn: { alignSelf: 'center', borderWidth: 1, borderColor: '#00ff88', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 20 },
   refreshText: { color: '#00ff88', fontSize: 14 },
+  modalOverlay: { flex: 1, backgroundColor: '#000000aa', justifyContent: 'flex-end' },
+modalCard: { backgroundColor: '#0a0a1a', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: '#1a1a2e' },
+modalAvatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#1a1a2e', justifyContent: 'center', alignItems: 'center', marginBottom: 12, borderWidth: 2, borderColor: '#00ff88' },
+modalAvatarText: { fontSize: 32, color: '#00ff88' },
+modalName: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
+modalGender: { color: '#888', fontSize: 14, marginBottom: 8 },
+modalTagline: { color: '#00ff88', fontSize: 16, fontStyle: 'italic', marginBottom: 8 },
+modalDistance: { color: '#888', fontSize: 13, marginBottom: 24 },
+modalButtons: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+waveBtn: { flex: 1, borderWidth: 1, borderColor: '#00ff88', padding: 14, borderRadius: 12, alignItems: 'center' },
+waveBtnText: { color: '#00ff88', fontWeight: 'bold' },
+winkBtn: { flex: 1, borderWidth: 1, borderColor: '#00ff88', padding: 14, borderRadius: 12, alignItems: 'center' },
+winkBtnText: { color: '#00ff88', fontWeight: 'bold' },
+sparkBtn: { flex: 1, backgroundColor: '#00ff88', padding: 14, borderRadius: 12, alignItems: 'center' },
+sparkBtnText: { color: '#0a0a1a', fontWeight: 'bold' },
+closeBtn: { padding: 12 },
+closeBtnText: { color: '#888', fontSize: 14 },
 });
