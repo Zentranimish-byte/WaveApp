@@ -63,6 +63,40 @@ export default function RadarScreen() {
       Math.sin(dLon/2) * Math.sin(dLon/2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
+  async function sendInteraction(type) {
+    console.log('sending interaction', type, 'to', selectedUser?.user_id);
+    if (!selectedUser) return;
+    const receiverId = selectedUser.user_id;
+  
+    const { error } = await supabase.from('interactions').insert({
+      sender_id: userId,
+      receiver_id: receiverId,
+      interaction_type: type,
+    });
+  
+    if (error) {
+      Alert.alert('Error', error.message);
+      return;
+    }
+  
+    const { data: existing } = await supabase
+      .from('interactions')
+      .select('id')
+      .eq('sender_id', receiverId)
+      .eq('receiver_id', userId)
+      .single();
+  
+    if (existing) {
+      await supabase.from('matches').insert({
+        user1_id: userId,
+        user2_id: receiverId,
+      });
+      Alert.alert('Its a match!', `You and ${selectedUser.profile?.display_name} matched!`);
+    } else {
+      Alert.alert('Sent!', `You ${type}d ${selectedUser.profile?.display_name}!`);
+    }
+    setSelectedUser(null);
+  }
 
   function getDotPosition(index, total) {
     const angle = (index / total) * 2 * Math.PI;
@@ -122,15 +156,15 @@ export default function RadarScreen() {
       <Text style={styles.modalDistance}>{Math.round(selectedUser?.distance)}m away</Text>
 
       <View style={styles.modalButtons}>
-        <TouchableOpacity style={styles.waveBtn}>
-          <Text style={styles.waveBtnText}>Wave</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.winkBtn}>
-          <Text style={styles.winkBtnText}>Wink</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sparkBtn}>
-          <Text style={styles.sparkBtnText}>Spark</Text>
-        </TouchableOpacity>
+      <TouchableOpacity style={styles.waveBtn} onPress={() => sendInteraction('wave')}>
+  <Text style={styles.waveBtnText}>Wave</Text>
+</TouchableOpacity>
+<TouchableOpacity style={styles.winkBtn} onPress={() => sendInteraction('wink')}>
+  <Text style={styles.winkBtnText}>Wink</Text>
+</TouchableOpacity>
+<TouchableOpacity style={styles.sparkBtn} onPress={() => sendInteraction('spark')}>
+  <Text style={styles.sparkBtnText}>Spark</Text>
+</TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.closeBtn} onPress={() => setSelectedUser(null)}>
