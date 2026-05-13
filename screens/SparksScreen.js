@@ -1,46 +1,62 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
+import ChatScreen from './ChatScreen';
 
 export default function SparksScreen() {
   const [interactions, setInteractions] = useState([]);
   const [matches, setMatches] = useState([]);
   const [userId, setUserId] = useState(null);
+  const [activeChatMatch, setActiveChatMatch] = useState(null);
 
   useEffect(() => {
     setup();
   }, []);
 
   async function setup() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    console.log('USER:', user?.id, 'ERROR:', error?.message);
+    if (!user) return;
     setUserId(user.id);
     fetchInteractions(user.id);
     fetchMatches(user.id);
   }
 
   async function fetchInteractions(uid) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('interactions')
-      .select('*, profiles!interactions_sender_id_fkey(display_name, age, gender, tagline)')
+      .select('*')
       .eq('receiver_id', uid)
-      .eq('status', 'pending')
       .order('created_at', { ascending: false });
+    console.log('interactions:', data, error);
     setInteractions(data || []);
   }
 
   async function fetchMatches(uid) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('matches')
-      .select('*, profiles!matches_user2_id_fkey(display_name, age, tagline)')
+      .select('*')
       .or(`user1_id.eq.${uid},user2_id.eq.${uid}`)
       .order('created_at', { ascending: false });
+    console.log('matches:', data, error);
     setMatches(data || []);
   }
+
+  if (activeChatMatch) return (
+    <ChatScreen
+      matchId={activeChatMatch.id}
+      otherUserName="Match"
+      onClose={() => setActiveChatMatch(null)}
+    />
+  );
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Sparks</Text>
+        <TouchableOpacity onPress={setup}>
+          <Text style={styles.refreshText}>Refresh</Text>
+        </TouchableOpacity>
       </View>
       <ScrollView style={styles.content}>
         <Text style={styles.sectionTitle}>Interactions Received</Text>
@@ -51,7 +67,7 @@ export default function SparksScreen() {
               <Text style={styles.avatarSmallText}>:)</Text>
             </View>
             <View style={styles.cardInfo}>
-              <Text style={styles.cardName}>{item.profiles?.display_name || 'Someone'}</Text>
+              <Text style={styles.cardName}>Someone</Text>
               <Text style={styles.cardAction}>{item.interaction_type}d you</Text>
             </View>
           </View>
@@ -65,10 +81,10 @@ export default function SparksScreen() {
               <Text style={styles.avatarSmallText}>:)</Text>
             </View>
             <View style={styles.cardInfo}>
-              <Text style={styles.cardName}>{item.profiles?.display_name || 'Someone'}</Text>
-              <Text style={styles.cardAction}>Matched with you</Text>
+              <Text style={styles.cardName}>Match</Text>
+              <Text style={styles.cardAction}>You matched!</Text>
             </View>
-            <TouchableOpacity style={styles.chatBtn}>
+            <TouchableOpacity style={styles.chatBtn} onPress={() => setActiveChatMatch(item)}>
               <Text style={styles.chatBtnText}>Chat</Text>
             </TouchableOpacity>
           </View>
@@ -80,8 +96,9 @@ export default function SparksScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a1a' },
-  header: { padding: 20, paddingTop: 50 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 50 },
   headerText: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
+  refreshText: { color: '#00ff88', fontSize: 14 },
   content: { padding: 16 },
   sectionTitle: { color: '#888', fontSize: 13, fontWeight: 'bold', marginBottom: 12, marginTop: 8, textTransform: 'uppercase' },
   emptyText: { color: '#444', fontSize: 14, marginBottom: 16 },
