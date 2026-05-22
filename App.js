@@ -2,6 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useState, useEffect } from 'react';
 import { supabase } from './services/supabase';
+import { View } from 'react-native';
+import ThisOrThatScreen from './screens/ThisOrThatScreen';
 import RadarScreen from './screens/RadarScreen';
 import FeedScreen from './screens/FeedScreen';
 import SparksScreen from './screens/SparksScreen';
@@ -14,6 +16,7 @@ const Tab = createBottomTabNavigator();
 export default function App() {
   const [session, setSession] = useState(null);
   const [hasProfile, setHasProfile] = useState(false);
+  const [hasAnswers, setHasAnswers] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,15 +33,25 @@ export default function App() {
   }, []);
 
   async function checkProfile(userId) {
-    const { data } = await supabase.from('profiles').select('id').eq('user_id', userId).single();
-    setHasProfile(!!data);
-    setLoading(false);
+    try {
+      const [profileResult, answersResult] = await Promise.all([
+        supabase.from('profiles').select('id').eq('user_id', userId).single(),
+        supabase.from('preference_answers').select('id').eq('user_id', userId).limit(1)
+      ]);
+      setHasProfile(!!profileResult.data);
+      setHasAnswers(answersResult.data && answersResult.data.length > 0);
+    } catch(e) {
+      console.log('checkProfile error:', e);
+    } finally {
+      setLoading(false);
+    }
   }
-
-  if (loading) return null;
+  if (loading) return (
+    <View style={{ flex: 1, backgroundColor: '#080810' }} />
+  );
   if (!session) return <AuthScreen />;
   if (!hasProfile) return <OnboardingScreen userId={session.user.id} onComplete={() => setHasProfile(true)} />;
-
+  if (!hasAnswers) return <ThisOrThatScreen userId={session.user.id} onComplete={() => setHasAnswers(true)} />;
   return (
     <NavigationContainer>
       <Tab.Navigator
