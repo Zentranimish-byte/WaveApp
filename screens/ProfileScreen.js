@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
+import PaywallScreen from './PaywallScreen';
 
 export default function ProfileScreen() {
   const [profile, setProfile] = useState(null);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -20,6 +22,16 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       <Text style={styles.loading}>Loading...</Text>
     </View>
+  );
+
+  if (showPaywall) return (
+    <PaywallScreen
+      onClose={() => setShowPaywall(false)}
+      onSubscribe={() => {
+        alert('Premium coming soon!');
+        setShowPaywall(false);
+      }}
+    />
   );
 
   return (
@@ -42,6 +54,9 @@ export default function ProfileScreen() {
         <TouchableOpacity style={styles.editBtn}>
           <Text style={styles.editBtnText}>Edit Profile</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.premiumBtn} onPress={() => setShowPaywall(true)}>
+          <Text style={styles.premiumBtnText}>Get Premium</Text>
+        </TouchableOpacity>
         <Text style={styles.sectionTitle}>The Vibe</Text>
         <Text style={styles.currentlyInto}>Currently Into: {profile.currently_into}</Text>
         <View style={styles.tilesRow}>
@@ -58,8 +73,8 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a1a' },
   loading: { color: '#fff', textAlign: 'center', marginTop: 100 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems:'center', padding: 20, paddingTop: 50 },
-    headerText: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 50 },
+  headerText: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
   settingsIcon: { color: '#888', fontSize: 14 },
   content: { padding: 16 },
   avatarSection: { alignItems: 'center', marginBottom: 24 },
@@ -68,8 +83,10 @@ const styles = StyleSheet.create({
   name: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
   gender: { color: '#888', fontSize: 14, marginTop: 2 },
   tagline: { color: '#00ff88', fontSize: 16, marginTop: 8, fontStyle: 'italic' },
-  editBtn: { borderWidth: 1, borderColor: '#00ff88', padding: 12, borderRadius: 20, alignItems: 'center', marginBottom: 24 },
+  editBtn: { borderWidth: 1, borderColor: '#00ff88', padding: 12, borderRadius: 20, alignItems: 'center', marginBottom: 12 },
   editBtnText: { color: '#00ff88', fontWeight: 'bold' },
+  premiumBtn: { backgroundColor: '#f5f0c0', padding: 12, borderRadius: 20, alignItems: 'center', marginBottom: 24 },
+  premiumBtnText: { color: '#080810', fontWeight: 'bold' },
   sectionTitle: { color: '#888', fontSize: 13, fontWeight: 'bold', marginBottom: 12, textTransform: 'uppercase' },
   currentlyInto: { color: '#fff', backgroundColor: '#1a1a2e', padding: 12, borderRadius: 12, marginBottom: 12 },
   tilesRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },

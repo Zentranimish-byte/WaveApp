@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useState, useEffect } from 'react';
 import { supabase } from './services/supabase';
 import { View } from 'react-native';
+import { setupPurchases } from './services/premium';
 import ThisOrThatScreen from './screens/ThisOrThatScreen';
 import RadarScreen from './screens/RadarScreen';
 import FeedScreen from './screens/FeedScreen';
@@ -31,8 +32,10 @@ export default function App() {
       else { setHasProfile(false); setLoading(false); }
     });
   }, []);
+  
 
   async function checkProfile(userId) {
+    await setupPurchases(userId);
     try {
       const [profileResult, answersResult] = await Promise.all([
         supabase.from('profiles').select('id').eq('user_id', userId).single(),
