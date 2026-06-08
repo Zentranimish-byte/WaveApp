@@ -11,6 +11,8 @@ import SparksScreen from './screens/SparksScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import AuthScreen from './screens/AuthScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
+import SparkRoomsScreen from './screens/SparkRoomsScreen';
+
 
 const Tab = createBottomTabNavigator();
 
@@ -64,9 +66,9 @@ export default function App() {
           tabBarActiveTintColor: '#00ff88',
           tabBarInactiveTintColor: '#888',
         }}>
-        <Tab.Screen name="Radar" component={RadarScreen} />
         <Tab.Screen name="Feed" component={FeedScreen} />
-        <Tab.Screen name="Sparks" component={SparksScreen} />
+        <Tab.Screen name="Radar" component={RadarScreen} />
+        <Tab.Screen name="Spark" component={SparksScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
     </NavigationContainer>
