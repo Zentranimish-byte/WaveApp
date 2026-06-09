@@ -35,6 +35,10 @@ export default function SparkRoomsScreen() {
 
   async function joinRoom() {
     setJoining(true);
+    
+    // Clear any old answers for this user from previous sessions
+    await supabase.from('room_answers').delete().eq('user_id', userId);
+    await supabase.from('room_waves').delete().eq('sender_id', userId);
     const { data: waitingRooms } = await supabase
       .from('spark_rooms')
       .select('*, room_users(count)')

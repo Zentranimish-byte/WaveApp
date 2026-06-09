@@ -10,8 +10,7 @@ import FeedScreen from './screens/FeedScreen';
 import SparksScreen from './screens/SparksScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import AuthScreen from './screens/AuthScreen';
-import OnboardingScreen from './screens/OnboardingScreen';
-import SparkRoomsScreen from './screens/SparkRoomsScreen';
+import OnboardingScreen from './screens/OnboardingScreen'; 
 
 
 const Tab = createBottomTabNavigator();
